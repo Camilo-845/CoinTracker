@@ -3,12 +3,12 @@ import cotizaciones from '../models/cotizaciones'
 
 // set endpoint and your access key
 
-const apikey = '47c283a15fb245428f7576fc9fdd053e';
+const apikey = '3c68b9ea29c742f6b1d2010f819c8d71';
 
 // get the most recent exchange rates via the "latest" endpoint:
 export const getDivisas= async() : Promise<any> =>{
-
-   const date= new Date();
+   try{
+      const date= new Date();
    const getDay = date.getDay();
    //console.log(getDay)
    const getCotizacion= await cotizaciones.find({})
@@ -19,7 +19,7 @@ export const getDivisas= async() : Promise<any> =>{
       const diaModel:any=getCotizacion[0].dia;
       if(diaModel!==getDay){
 
-         const url=  await axios('https://exchange-rates.abstractapi.com/v1/live?api_key='+apikey+'&base=USD')
+         const url=  await axios('  ')
          const infoDivisas = url.data
          const str = JSON.stringify(infoDivisas);
          const coti = JSON.parse(str).exchange_rates
@@ -41,6 +41,11 @@ export const getDivisas= async() : Promise<any> =>{
    const str = JSON.stringify(infoDivisas);
    const coti = JSON.parse(str).exchange_rates
    return coti;
+   }
+   catch (error){
+      console.log(error)
+   }
+   
 }
 
 

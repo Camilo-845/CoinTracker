@@ -7,11 +7,57 @@ import { priceAlert } from "../utils/handleMail";
 //import numberFormat from '../../../client/src/utils/numberFormat.js';
 
 export const getActivos = async (): Promise<any> => {
-  const datos = await activos.find({});
-
+  var datos = await activos.find({});
+  if(!datos || datos.length == 0){
+    await createActivos();
+    datos = await activos.find({}); 
+  } 
   return datos[0].activos;
 };
 
+const createActivos = async (): Promise<any> =>{
+  try{
+    let rank: number = 1;
+    const url = await axios(
+      `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false`
+    );
+    //console.log(url)
+    //console.log(JSON.stringify(infoActivos))
+    //const activos = JSON.parse(infoActivos)
+    const infoActivos = await url.data.map((e: any) => {
+      return {
+        rank: rank++,
+        id: e.id,
+        symbol: e.symbol,
+        name: e.name,
+        image: e.image,
+        current_price: e.current_price,
+        market_cap: e.market_cap,
+        high_24h: e.high_24h,
+        low_24h: e.low_24h,
+        total_volume: e.total_volume,
+        total_supply: e.total_supply,
+        max_supply: e.max_supply,
+        circulating_supply: e.circulating_supply,
+        porcentaje: e.market_cap_change_percentage_24h,
+      };
+    });
+    const date = new Date();
+    const horas: any = date.toLocaleTimeString();
+    const horaSplit = horas.split(":");
+    const fecha = date.toDateString();
+
+    const create = {
+      hora: `${horaSplit[0]}:${horaSplit[1]}`,
+      fecha: fecha,
+      activos: infoActivos,
+    };
+    await activos.create(create)
+  }
+  catch (e){
+    console.log(e)
+  }
+}
 export const ActualizarApi = async (): Promise<any> => {
   try {
     let rank: number = 1;
@@ -50,8 +96,13 @@ export const ActualizarApi = async (): Promise<any> => {
       activos: infoActivos,
     };
 
+
     const currentActivos = await activos.find({});
     const reminders = await reminder.find({});
+
+    if(!currentActivos || currentActivos.length == 0){
+      await createActivos();
+    }
 
     currentActivos[0].activos.forEach((activo) => {
       reminders.forEach(async (item: any) => {
@@ -78,9 +129,8 @@ export const ActualizarApi = async (): Promise<any> => {
         }
       });
     });
-
     await activos.replaceOne({ _id: currentActivos[0]._id }, create);
-  } catch (e) {
+  } catch (e) { 
     console.log(e);
   }
 };

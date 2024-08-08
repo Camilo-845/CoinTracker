@@ -14,7 +14,7 @@ const getNews = async (_req: Request, res: Response) => {
     if (getModel.length == 0 || getModel[0].fecha !== dateDay) {
       await News.deleteMany({});
       const getNews = await axios(
-        `https://api.currentsapi.services/v1/search?apiKey=${KEYAPI_NEWS}&keywords=crypto&category=technology`
+        `https://api.currentsapi.services/v1/search?apiKey=${KEYAPI_NEWS}&category=technology`
       );
       const clearNewsApi = await getNews.data;
       const newD = clearNewsApi.news.map((e: any) => {
